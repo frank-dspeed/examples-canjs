@@ -444,11 +444,11 @@
     "@polymer/iron-location" "^3.0.0-pre.1"
     "@polymer/polymer" "^3.0.0-pre.1"
 
-"@polymer/font-roboto@^0.0.3", "@polymer/font-roboto@^3.0.0-pre.1":
+"@polymer/font-roboto@^3.0.0-pre.1":
   version "3.0.0-pre.1"
   resolved "https://registry.yarnpkg.com/@polymer/font-roboto/-/font-roboto-3.0.0-pre.1.tgz#3b989a3b7c7d7351d4d816f8136d708512b0bd10"
 
-"@polymer/iron-a11y-keys-behavior@^0.0.3", "@polymer/iron-a11y-keys-behavior@^3.0.0-pre.1":
+"@polymer/iron-a11y-keys-behavior@^3.0.0-pre.1":
   version "3.0.0-pre.1"
   resolved "https://registry.yarnpkg.com/@polymer/iron-a11y-keys-behavior/-/iron-a11y-keys-behavior-3.0.0-pre.1.tgz#0b2954d7f6b04d97c9ae69c7f7cb82b9d4efe3e4"
   dependencies:
@@ -461,14 +461,14 @@
     "@polymer/polymer" "^1.2.5-npm-test.2"
     "@polymer/promise-polyfill" "^1.0.0-npm-test.2"
 
-"@polymer/iron-behaviors@^0.0.3", "@polymer/iron-behaviors@^3.0.0-pre.1":
+"@polymer/iron-behaviors@^3.0.0-pre.1":
   version "3.0.0-pre.1"
   resolved "https://registry.yarnpkg.com/@polymer/iron-behaviors/-/iron-behaviors-3.0.0-pre.1.tgz#bbb1d7555bf93e5d221d18cbf82d6994b39585b7"
   dependencies:
     "@polymer/iron-a11y-keys-behavior" "^3.0.0-pre.1"
     "@polymer/polymer" "^3.0.0-pre.1"
 
-"@polymer/iron-checked-element-behavior@^0.0.3", "@polymer/iron-checked-element-behavior@^3.0.0-pre.1":
+"@polymer/iron-checked-element-behavior@^3.0.0-pre.1":
   version "3.0.0-pre.1"
   resolved "https://registry.yarnpkg.com/@polymer/iron-checked-element-behavior/-/iron-checked-element-behavior-3.0.0-pre.1.tgz#329089923fdc05a974ca7d78048c65cd7249150d"
   dependencies:
@@ -507,7 +507,7 @@
   dependencies:
     "@polymer/polymer" "^3.0.0-pre.1"
 
-"@polymer/iron-form-element-behavior@^0.0.3", "@polymer/iron-form-element-behavior@^3.0.0-pre.1":
+"@polymer/iron-form-element-behavior@^3.0.0-pre.1":
   version "3.0.0-pre.1"
   resolved "https://registry.yarnpkg.com/@polymer/iron-form-element-behavior/-/iron-form-element-behavior-3.0.0-pre.1.tgz#a8bd62f2b6726353a821527683609081213441e7"
   dependencies:
@@ -580,7 +580,7 @@
   dependencies:
     "@polymer/polymer" "^3.0.0-pre.1"
 
-"@polymer/iron-validatable-behavior@^0.0.3", "@polymer/iron-validatable-behavior@^3.0.0-pre.1":
+"@polymer/iron-validatable-behavior@^3.0.0-pre.1":
   version "3.0.0-pre.1"
   resolved "https://registry.yarnpkg.com/@polymer/iron-validatable-behavior/-/iron-validatable-behavior-3.0.0-pre.1.tgz#2d1f05e69738e003a761769036d1aece32a7a266"
   dependencies:
@@ -635,7 +635,7 @@
     "@polymer/paper-styles" "^0.0.3"
     "@polymer/polymer" "^1.2.5-npm-test.2"
 
-"@polymer/paper-ripple@^0.0.3", "@polymer/paper-ripple@^3.0.0-pre.1":
+"@polymer/paper-ripple@^3.0.0-pre.1":
   version "3.0.0-pre.1"
   resolved "https://registry.yarnpkg.com/@polymer/paper-ripple/-/paper-ripple-3.0.0-pre.1.tgz#67e692ea2c6d91d4f5f5bdf998dbd8a52acd9efa"
   dependencies:
@@ -708,10 +708,6 @@ ajv@^5.1.0:
     fast-deep-equal "^1.0.0"
     fast-json-stable-stringify "^2.0.0"
     json-schema-traverse "^0.3.0"
-
-amdefine@>=0.0.4:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/amdefine/-/amdefine-1.0.1.tgz#4a5282ac164729e93619bcfd3ad151f817ce91f5"
 
 ansi-styles@^3.1.0:
   version "3.2.0"
@@ -1007,6 +1003,14 @@ can-dom-events@^1.0.2:
     can-globals "^0.2.2"
     can-namespace "^1.0.0"
 
+can-element@^0.2.3:
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/can-element/-/can-element-0.2.3.tgz#a348d0bcc9ab7305252a9d5f295696473c0c3f1c"
+  dependencies:
+    can-util "^3.2.2"
+    can-view-nodelist "^3.0.4"
+    can-view-scope "^3.3.6"
+
 can-event-dom-enter@^1.0.0, can-event-dom-enter@^1.0.2:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/can-event-dom-enter/-/can-event-dom-enter-1.0.3.tgz#53e805e600bb9466821e0605e97508cc60f2e4b2"
@@ -1210,7 +1214,7 @@ can-types@^1.1.0:
     can-reflect "^1.0.0"
     can-symbol "^1.0.0"
 
-can-util@^3.10.12, can-util@^3.10.6, can-util@^3.10.9, can-util@^3.9.0, can-util@^3.9.0-pre.4, can-util@^3.9.5, can-util@^3.9.6:
+can-util@^3.10.12, can-util@^3.10.6, can-util@^3.10.9, can-util@^3.2.2, can-util@^3.9.0, can-util@^3.9.0-pre.4, can-util@^3.9.5, can-util@^3.9.6:
   version "3.10.14"
   resolved "https://registry.yarnpkg.com/can-util/-/can-util-3.10.14.tgz#53c4e7792b9209edf310081265223c18bef366ff"
   dependencies:
@@ -1286,7 +1290,7 @@ can-view-model@^3.3.0, can-view-model@^3.4.0:
     can-types "^1.1.0"
     can-util "^3.9.5"
 
-can-view-nodelist@^3.1.0:
+can-view-nodelist@^3.0.4, can-view-nodelist@^3.1.0:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/can-view-nodelist/-/can-view-nodelist-3.1.1.tgz#528c8fc9c77bfabe070bd65fd48437ceee5d4ea5"
   dependencies:
@@ -1301,7 +1305,7 @@ can-view-parser@^3.4.0, can-view-parser@^3.6.0:
     can-log "^0.1.0"
     can-namespace "1.0.0"
 
-can-view-scope@^3.3.1, can-view-scope@^3.4.2, can-view-scope@^3.5.1, can-view-scope@^3.5.3:
+can-view-scope@^3.3.1, can-view-scope@^3.3.6, can-view-scope@^3.4.2, can-view-scope@^3.5.1, can-view-scope@^3.5.3:
   version "3.5.3"
   resolved "https://registry.yarnpkg.com/can-view-scope/-/can-view-scope-3.5.3.tgz#d2702319f7de601224c1e1a658ac8f413e4a678a"
   dependencies:
@@ -2261,10 +2265,6 @@ vm-browserify@~0.0.4:
   resolved "https://registry.yarnpkg.com/vm-browserify/-/vm-browserify-0.0.4.tgz#5d7ea45bbef9e4a6ff65f95438e0a87c357d5a73"
   dependencies:
     indexof "0.0.1"
-
-webcomponents.js@^0.7.20:
-  version "0.7.24"
-  resolved "https://registry.yarnpkg.com/webcomponents.js/-/webcomponents.js-0.7.24.tgz#2116fbfa1468ec416a7befdaa333e1d118f69c04"
 
 wordwrap@~1.0.0:
   version "1.0.0"
