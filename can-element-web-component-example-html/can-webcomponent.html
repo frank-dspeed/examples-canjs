@@ -1,0 +1,458 @@
+<script type="text/javascript">
+    var assign = require("can-assign");
+    
+    var domDataState = require("can-dom-data-state");
+    var mutationDocument = require("../mutation-observer/document/document");
+    
+    function deleteNode() {
+        return domDataState.delete.call(this);
+    };
+    
+    // count of distinct elements that have domData set
+    var elementSetCount = 0;
+    
+    var cleanupDomData = function(node) {
+        // decrement count if node was deleted
+        elementSetCount -= deleteNode.call(node) ? 1 : 0;
+    
+        // remove handler once all domData has been cleaned up
+        if (elementSetCount === 0) {
+            mutationDocument.offAfterRemovedNodes(cleanupDomData);
+        }
+    };
+    
+    /**
+     * @module {{}} can-util/dom/data/data data
+     * @parent can-util/dom
+     * @description Allows associating data as a key/value pair for a particular
+     * DOM Node.
+     *
+     * ```js
+     * var domData = require("can-util/dom/data/data");
+     * ```
+     */
+    var domData = {
+        /**
+         * @function can-util/dom/data/data.getCid domData.getCid
+         * @signature `domData.getCid.call(el)`
+         * @return {Number} The value of the element's unique CID
+         *
+         * Return the previously set unique identifier for the dom node.
+         */
+        getCid: domDataState.getCid,
+        /**
+         * @function can-util/dom/data/data.cid domData.cid
+         * @signature `domData.cid.call(el)`
+         * @return {Number} The value of the element's unique CID
+         *
+         * Set a unique identifier for the dom node, using the
+         * [can-util/dom/data/data.expando expando] property.
+         *
+         * @body
+         *
+         * If a unique cid value has not yet been set for this element, set it
+         * using the [can-util/dom/data/data.expando expando] property.  Return the
+         * unique cid whether or not it is newly set
+         */
+        cid: domDataState.cid,
+        /**
+         * @property can-util/dom/data/data.expando domData.expando
+         * @type {String}
+         *
+         * The key in which elements' cids are stored
+         */
+        expando: domDataState.expando,
+        /**
+         * @function can-util/dom/data/data.clean domData.clean
+         * @param  {String} prop the property to remove from the element's data
+         * @signature `domData.clean.call(el, key)`
+         *
+         * Remove data from an element previously added by [can-util/dom/data/data.set set]
+         *
+         * ```js
+         * var domData = require("can-util/dom/data/data");
+         * 
+         * domData.clean.call(el, "metadata");
+         * ```
+         */
+        clean: domDataState.clean,
+        /**
+         * @function can-util/dom/data/data.get domData.get
+         * @signature `domData.get.call(el, key)`
+         *
+         * Get data that was stored in a DOM Node using the specified `key`.
+         *
+         * ```js
+         * var domData = require("can-util/dom/data/data");
+         * 
+         * var metadata = domData.get.call(el, "metadata");
+         * ```
+         *
+         * @param {String} key A string used as a unique key for storing data associated with this DOM Node.
+         */
+        get: domDataState.get,
+        /**
+         * @function can-util/dom/data/data.set domData.set
+         * @signature `domData.set.call(el, name, value)`
+         *
+         * @param {String} name the key to store the value under
+         * @param {*} value     the value to store under the key
+         *
+         * Set data to be associated with a DOM Node using the specified `key`. If data already exists for this key, it will be overwritten.
+         *
+         * ```js
+         * var domData = require("can-util/dom/data/data");
+         * 
+         * domData.set.call(el, "metadata", {
+         *   foo: "bar"
+         * });
+         * ```
+         */
+        set: function(name, value) {
+            // set up handler to clean up domData when elements are removed
+            // handler only needs to be set up the first time set is called
+            if (elementSetCount === 0) {
+                mutationDocument.onAfterRemovedNodes(cleanupDomData);
+            }
+            // increment elementSetCount if set returns true
+            elementSetCount += domDataState.set.call(this, name, value) ? 1 : 0;
+        },
+        /**
+         * @function can-util/dom/data/data.delete domData.delete
+         * @signature `domData.delete.call(el)`
+         *
+         * Remove all data for an element previously added by [can-util/dom/data/data.set set]
+         *
+         * ```js
+         * var domData = require("can-util/dom/data/data");
+         * 
+         * domData.delete.call(el);
+         * ```
+         */
+        delete: deleteNode
+    };
+        
+    
+    // # can/util/inserted
+    // Used to alert interested parties of when an element is inserted into the DOM.
+    // Given a list of elements, check if the first is in the DOM, and if so triggers the `inserted` event on all elements and their descendants.
+    
+    var makeArray = require("../../js/make-array/make-array");
+    var setImmediate = require("../../js/set-immediate/set-immediate");
+    var CID = require("can-cid");
+    
+    var getMutationObserver = require("can-globals/mutation-observer/mutation-observer");
+    var childNodes = require("../child-nodes/child-nodes");
+    var domContains = require("../contains/contains");
+    var domDispatch = require("../dispatch/dispatch");
+    var getDocument = require('can-globals/document/document');
+    var domData = require("../data/data");
+    
+    var mutatedElements;
+    var checks = {
+        inserted: function(root, elem){
+            return domContains.call(root, elem);
+        },
+        removed: function(root, elem){
+            return !domContains.call(root, elem);
+        }
+    };
+    
+    var fireOn = function(elems, root, check, event, dispatched) {
+        if (!elems.length) {
+            return;
+        }
+        var children, cid;
+    
+        // Go through `elems` and trigger the `inserted` event.
+        // If the first element is not in the document (a Document Fragment) it will exit the function.
+        // If it is in the document it sets the `inDocument` flag to true. This means that we only check
+        // for the first element and either exit the function or start triggering "inserted" for child elements.
+        for (var i = 0, elem; (elem = elems[i]) !== undefined; i++) {
+            cid = CID(elem);
+            // If we've found an element in the document then we can now trigger **"inserted"** for `elem` and all of its children. We are using `getElementsByTagName("*")` so that we grab all of the descendant nodes.
+            if (elem.getElementsByTagName && check(root, elem) && !dispatched[cid]) {
+                // mark as being dispatched
+                dispatched[cid] = true;
+                children = makeArray(elem.getElementsByTagName("*"));
+                domDispatch.call(elem, event, [], false);
+                if (event === "removed") {
+                    domData.delete.call(elem);
+                }
+    
+                for (var j = 0, child;
+                    (child = children[j]) !== undefined; j++) {
+                    // fire the event only if this hasn't already been fired on.
+                    cid = CID(child);
+                    if(!dispatched[cid]) {
+                        domDispatch.call(child, event, [], false);
+                        // jshint maxdepth:5
+                        if (event === "removed") {
+                            domData.delete.call(child);
+                        }
+                        dispatched[cid] = true;
+                    }
+                }
+            }
+        }
+    };
+    //
+    var fireMutations = function(){
+        var mutations = mutatedElements;
+        mutatedElements = null;
+    
+        var firstElement = mutations[0][1][0];
+        var doc = getDocument() || firstElement.ownerDocument || firstElement;
+        var root = doc.contains ? doc : doc.documentElement;
+        var dispatched = {inserted: {}, removed: {}};
+        mutations.forEach(function(mutation){
+            fireOn(mutation[1], root, checks[mutation[0]], mutation[0], dispatched[mutation[0]]);
+        });
+    };
+    var mutated = function(elements, type) {
+        if(!getMutationObserver() && elements.length) {
+            // make sure this element is in the page (mutated called before something is removed)
+            var firstElement = elements[0];
+            var doc = getDocument() || firstElement.ownerDocument || firstElement;
+            var root = doc.contains ? doc : doc.documentElement;
+            if( checks.inserted(root, firstElement) ) {
+    
+                // if it is, schedule a mutation fire
+                if(!mutatedElements) {
+                    mutatedElements = [];
+                    setImmediate(fireMutations);
+                }
+                mutatedElements.push([type, elements]);
+            }
+        }
+    };
+    
+    /**
+     * @module {{}} can-util/dom/mutate/mutate mutate
+     * @parent can-util/dom
+     * @description Mutate an element by appending, inserting, and removing DOM nodes. Use this so that on the server "inserted" will be fired.
+     *
+     * ```js
+     * var mutate = require("can-util/dom/mutate/mutate");
+     *
+     * var el = document.createElement("div");
+     *
+     * el.addEventListener("inserted", function(){
+     *   console.log("Inserted was fired!");
+     * });
+     *
+     * mutate.appendChild.call(document.body, el);
+     * ```
+     */
+    var domMutate = {
+        /**
+         * @function can-util/dom/mutate/mutate.appendChild appendChild
+         * @signature `mutate.appendChild.call(el, child)`
+         * Used to append a node to an element and trigger the "inserted" event on all of the newly inserted children. Since `mutated` takes an array we convert the child to an array, or in the case of a DocumentFragment we first convert the childNodes to an array and call inserted on those.
+         */
+        appendChild: function(child) {
+            if(getMutationObserver()) {
+                this.appendChild(child);
+            } else {
+                var children;
+                if (child.nodeType === 11) {
+                    children = makeArray(childNodes(child));
+                } else {
+                    children = [child];
+                }
+                this.appendChild(child);
+                mutated(children,"inserted");
+            }
+        },
+        /**
+         * @function can-util/dom/mutate/mutate.insertBefore insertBefore
+         * @signature `mutate.insertBefore.call(el, ref, child)`
+         * Like mutate.appendChild, used to insert a node to an element before a reference node and then trigger the "inserted" event.
+         */
+        insertBefore: function(child, ref, document) {
+            if(getMutationObserver()) {
+                this.insertBefore(child, ref);
+            } else {
+                var children;
+                if (child.nodeType === 11) {
+                    children = makeArray(childNodes(child));
+                } else {
+                    children = [child];
+                }
+                this.insertBefore(child, ref);
+                mutated(children,"inserted");
+            }
+        },
+        /**
+         * @function can-util/dom/mutate/mutate.removeChild removeChild
+         * @signature `mutate.removeChild.call(el, child)`
+         * Like mutate.appendChild, used to insert a node to an element before a reference node and then trigger the "removed" event.
+         */
+        removeChild: function(child){
+            if(getMutationObserver()) {
+                this.removeChild(child);
+            } else {
+                mutated([child],"removed");
+                this.removeChild(child);
+            }
+        },
+        /**
+         * @function can-util/dom/mutate/mutate.replaceChild replaceChild
+         * @signature `mutate.replaceChild.call(el, child)`
+         * Like mutate.appendChild and mutate.removeChild, used to replace a node with another node and trigger "removed" on the removed element and "inserted" on the inserted elements.
+         */
+        replaceChild: function(newChild, oldChild){
+            if(getMutationObserver()) {
+                this.replaceChild(newChild, oldChild);
+            } else {
+                var children;
+                if (newChild.nodeType === 11) {
+                    children = makeArray(childNodes(newChild));
+                } else {
+                    children = [newChild];
+                }
+                mutated([oldChild],"removed");
+                this.replaceChild(newChild, oldChild);
+                mutated(children,"inserted");
+            }
+        },
+        // called with elements that might have been inserted
+        inserted: function(elements){
+            mutated(elements,"inserted");
+        },
+        // called with elements that have been removed
+        removed: function(elements){
+            mutated(elements,"removed");
+        }
+    };
+    
+    
+    /**
+     * @module {function} can-util/dom/child-nodes/child-nodes child-nodes
+     * @parent can-util/dom
+     * @signature `childNodes(node)`
+     *
+     * Get all of the childNodes of a given node.
+     *
+     * ```js
+     * var stache = require("can-stache");
+     * var childNodes = require("can-util/child-nodes/child-nodes");
+     *
+     * var html = "<div><h1><span></span></h1></div>";
+     * var frag = stache(html)();
+     *
+     * console.log(childNodes(frag)[0].nodeName); // -> DIV
+     * ```
+     *
+     * @param {Object} node The Node that you want child nodes for.
+     */
+    
+    function getchildNodes(node) {
+        var childNodes = node.childNodes;
+        if ("length" in childNodes) {
+            return childNodes;
+        } else {
+            var cur = node.firstChild;
+            var nodes = [];
+            while (cur) {
+                nodes.push(cur);
+                cur = cur.nextSibling;
+            }
+            return nodes;
+        }
+    }
+    
+        
+        
+    var nodeLists = require("can-view-nodelist");
+    var Scope = require("can-view-scope");
+    
+    function CustomElement(BaseElement) {
+        function CanElement(){
+            var self = Reflect.construct(BaseElement, arguments, this.constructor);
+    
+            self._rendered = false;
+            var Element = self.constructor;
+            if(Element.view) {
+                self.attachShadow({ mode: "open" });
+            }
+    
+            // Mark the element as its own viewModel for binding purposes
+            var existingViewModel = domData.get.call(self, "viewModel");
+            if(existingViewModel) {
+                assign(self, existingViewModel.get());
+            }
+            domData.set.call(self, "viewModel", self);
+    
+            return self;
+        }
+    
+        CanElement.prototype = Object.create(BaseElement.prototype);
+        CanElement.prototype.constructor = CanElement;
+    
+        var proto = CanElement.prototype;
+    
+        proto.connectedCallback = function(){
+            // What is the root from which we render?
+            var root = this.shadowRoot || this;
+    
+            // We only want to render once but connectedCallback gets called
+            // any time the element is inserted which could be N number of times.
+            if(!this._rendered) {
+                // setup our nodeList
+                this._nodeList = nodeLists.register([], null, true, false);
+                this._nodeList.expression = "<" + this.localName + ">";
+    
+                var Element = this.constructor;
+                var scope = new Scope(this);
+                var frag = Element.view(scope, null, this._nodeList);
+    
+                // Append the resulting document fragment to the element
+                domMutate.appendChild.call(root, frag);
+                this._rendered = true;
+            }
+    
+            // update the nodeList with the new children so the mapping gets applied
+            nodeLists.update(this._nodeList, getChildNodes(root));
+        };
+    
+        proto.disconnectedCallback = function(){
+            nodeLists.unregister(this._nodeList);
+        };
+    
+        Object.defineProperty(CanElement, "observedAttributes", {
+            get: function(){
+                return this._observedAttributes || [];
+            }
+        });
+    
+        proto.attributeChangedCallback = function(attr, oldVal, newVal){
+            this[attr] = newVal;
+        };
+    
+        return CanElement;
+    }
+    
+    var stache = require("can-stache");
+    var define = require("can-define");
+    
+    var view = stache("Hello {{name}}");
+    
+    var MyApp = class extends Element {
+        static get view() {
+            return view;
+        }
+    };
+    
+    define(MyApp.prototype, {
+        name: {
+            value: "world"
+        }
+    });
+    
+    customElements.define("my-app", MyApp);
+    
+    var el = document.createElement("my-app");
+    
+    el.name; // -> "world"
+    </script>

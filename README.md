@@ -16,3 +16,4 @@ Recipes for CanJS
 - they got a test framework that is steal loader based so useless if not using steal its called testee
 - they got some good doc generators parsing custom formarts but as sayed befor code that is self explaining always winns 
 - replace typescript always with JS and JSDOC or even better assert calls inside the dev code
+- In 2020 i have reached near 6 years if expirence with it 
