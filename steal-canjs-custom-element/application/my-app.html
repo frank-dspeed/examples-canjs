@@ -1,0 +1,40 @@
+    <!-- Latest compiled and minified CSS -->
+    <script src="/node_modules/steal/steal.js" main="application/my-app"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      function checkToken(token) {
+        $.get('api/tokens', function(res) {
+          console.log(res)
+          // if valid rerender State if not all
+        });
+      }
+      function renderFile(data,file = 'template.mst') {
+        $.get(file,function(template) {
+          render(template,data,'#target')
+        })
+      }
+      function render(template,data = {}, target = '#target') {
+          Mustache.parse(template);   // optional, speeds up future uses
+          var rendered = Mustache.render(template, data);
+          $(target).html(rendered);
+      }
+      // Method to Read Query Parameters
+      function getParameterByName(name, url) {
+          if (!url) url = window.location.href;
+          name = name.replace(/[\[\]]/g, "\\$&");
+          var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+              results = regex.exec(url);
+          if (!results) return null;
+          if (!results[2]) return '';
+          return decodeURIComponent(results[2].replace(/\+/g, " "));
+      }
+      // Check if token is set
+      var token = getParameterByName('token');
+      // if not show login
+
+      if (token) {
+        checkToken(token)
+      }
+    </script>
