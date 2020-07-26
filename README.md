@@ -1,7 +1,7 @@
 # examples-canjs
 Recipes for CanJS
 
-
+https://gist.github.com/frank-dspeed/c33a6c2eb44ac2fb29da7ff5b5c827f6 Includes Research nodejs 
 
 ## Lessens Learned from Bitovi Projects Exploration Inovation
 - Always code clean ESM for Reading code gets more read then written
